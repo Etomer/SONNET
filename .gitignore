@@ -10,8 +10,8 @@ env/**
 results/**
 
 # specific test file
-scripts/test.ipynb
-scripts/test.py
+scripts/generate_dataset/test.ipynb
+scripts/generate_dataset/test.py
 
 # Compiled source #
 ###################

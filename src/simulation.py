@@ -58,11 +58,12 @@ def simulate_room(signal):
     # add sender
     max_time = n_simulation_samples/config_gen.fs
     curve = QuadraticBezierCurve(np.array([x,y,z]), max_time, config_gen.sound_source_max_speed)
+    sender_dir_obj = random_dir_obj() # sender is pointing at a constant direction during movement
     for i in range(config_gen.sound_source_locations_per_recording):
         t = i*max_time/config_gen.sound_source_locations_per_recording
         send_pos = curve(t)
         local_signal = signal[int(i*n_simulation_samples/config_gen.sound_source_locations_per_recording):int((i+1)*n_simulation_samples/config_gen.sound_source_locations_per_recording)]
-        room.add_source(send_pos,directivity=random_dir_obj(),signal=local_signal,delay=t)
+        room.add_source(send_pos,directivity=sender_dir_obj,signal=local_signal,delay=t)
 
     # add receivers
     R = np.array(np.stack([random_point_in_room() for i in range(config_gen.n_mics)]).T)

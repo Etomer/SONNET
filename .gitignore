@@ -8,7 +8,7 @@ data/*
 # Virtual env files
 .venv/**
 env/**
-results/**
+#results/**
 *.pth
 
 # specific test file

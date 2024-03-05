@@ -42,7 +42,7 @@ def simulate_room(signal):
     reflection_coeff = float((np.random.rand(1)*(config_gen.reflection_coeff_max- config_gen.reflection_coeff_min) + config_gen.reflection_coeff_min)[0])
     x,y,z = (config_gen.room_max_size - config_gen.room_min_size)*np.random.rand(3) + config_gen.room_min_size
     random_point_in_room = lambda : np.random.rand(3)*[x,y,z]
-    corners = np.array([[0,0], [0,y], [x,y], [x,0]]).T 
+    #corners = np.array([[0,0], [0,y], [x,y], [x,0]]).T 
     room = pra.ShoeBox([x,y,z], fs=config_gen.fs, max_order=3, materials=pra.Material(reflection_coeff, config_gen.scatter_coeff), ray_tracing=False, air_absorption=True)
 
     # handle directivity of sender and receiver

@@ -9,6 +9,7 @@ data/*
 .venv/**
 env/**
 results/**
+!results/datasets/README.md
 *.pth
 
 # specific test file

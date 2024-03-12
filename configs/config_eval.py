@@ -21,6 +21,8 @@ def get_models():
 
 # Simulated evaluation
 reverberations_levels = [0.05 + i/10.0 for i in range(9)]
+recording_len = 10000 #samples
+extra_samples_start_for_echo = 2000 #samples
 snr_at_reverb_measurement = 10
 n_rooms_simulate = 100
 n_mics = 50

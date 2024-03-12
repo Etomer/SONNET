@@ -3,7 +3,7 @@ import os
 recording_len = 10000 #samples
 extra_samples_start_for_echo = 2000 #samples
 
-n_rooms_simulate = int(1e3)
+n_rooms_simulate = int(1e4)
 
 n_mics = 50
 reflection_coeff_min = 0.05

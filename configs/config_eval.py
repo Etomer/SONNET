@@ -9,10 +9,11 @@ from models.gcc_phat.gcc_phat import gcc_phat
 
 def get_models():
     models = {
+        "musan_small" : torch.load("models/ResNetFFT/checkpoints/musan_small.pth").to(device),
+        "musan" : torch.load("models/ResNetFFT/checkpoints/musan.pth").to(device),
         
-        "learned_model_small" : torch.load("models/ResNetFFT/checkpoints/musan_bigger_model_small_17.pth").to(device),
-        "learned_model" : torch.load("models/ResNetFFT/checkpoints/musan_bigger_45.pth").to(device),
-        "learned_model_large" : torch.load("models/ResNetFFT/checkpoints/musan_bigger_14.pth").to(device),
+        #"learned_model" : torch.load("models/ResNetFFT/checkpoints/musan_bigger_45.pth").to(device),
+        #"learned_model_large" : torch.load("models/ResNetFFT/checkpoints/musan_bigger_14.pth").to(device),
  
         "gcc_phat" : gcc_phat()
     }

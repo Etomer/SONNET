@@ -113,3 +113,4 @@ for epoch in range(config_train.n_epochs):
     
     if epoch % config_train.epochs_between_model_save == 0:
         torch.save(model,os.path.join(config_train.save_model_folder,config_train.model_name + "_" + str(epoch)+ ".pth"))
+torch.save(model,os.path.join(config_train.save_model_folder,config_train.model_name + ".pth"))

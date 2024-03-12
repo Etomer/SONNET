@@ -3,7 +3,7 @@ import os
 recording_len = 10000 #samples
 extra_samples_start_for_echo = 2000 #samples
 
-n_rooms_simulate = int(4e4)
+n_rooms_simulate = int(1e4)
 
 n_mics = 50
 reflection_coeff_min = 0.05
@@ -18,11 +18,11 @@ sound_folder = os.path.join("data","musan")
 
 fs = 16000 # requires all .wav files to have this sampling frequency
 
-directivity = False
+directivity = True
 
 sound_source_max_speed = 5 # m/s
 sound_source_locations_per_recording = 30 # number of locations to simulate the sound source at (instead of moving the source) Note: this is inculding the extra_samples_start_for_echo
 
 # Storing data set after:
 dataset_target_folder = os.path.join("results","datasets")
-dataset_target_name = "musan_bigger"
+dataset_target_name = "musan_fin"

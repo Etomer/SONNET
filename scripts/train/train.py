@@ -34,6 +34,13 @@ def train(dataloader, model, loss_fn, optimizer):
         y[y >= config_train.output_size] = config_train.output_size-1
         y[y < 0] = 0
         X = X.float()
+
+        # # mask augmentation
+        # if config_train.mask_augmentation:
+        #     should_mask = torch.rand(X.shape[0]) < config_train.mask_prob
+        #     for i,(start,stop) in enumerate(torch.randint(config_train.input_size,(should_mask.sum(),2)).sort()[0]):
+        #         X[i,:,start:stop] = 0
+
         X, y = X.to(config_train.device), y.to(config_train.device)
         
         if config_train.measurement_noise:

@@ -2,6 +2,7 @@ import pyroomacoustics as pra
 import numpy as np
 import configs.config_gen as config_gen
 
+
 class QuadraticBezierCurve():
     
     def __init__(self, room_size, max_time, max_speed):
@@ -34,9 +35,14 @@ class QuadraticBezierCurve():
 def simulate_room(signal):
 
     # select subpart of signal
+
     n_simulation_samples = config_gen.recording_len + config_gen.extra_samples_start_for_echo
-    start_idx = np.random.randint(signal.shape[0] - n_simulation_samples - 1)
-    signal = signal[start_idx:start_idx+n_simulation_samples]
+    for i in range(10):
+        start_idx = np.random.randint(signal.shape[0] - n_simulation_samples - 1)
+        signal_temp = signal[start_idx:start_idx+n_simulation_samples]
+        if np.std(signal[config_gen.extra_samples_start_for_echo:]) > 1e3:
+            break
+    signal = signal_temp
 
     # generate room
     reflection_coeff = float((np.random.rand(1)*(config_gen.reflection_coeff_max- config_gen.reflection_coeff_min) + config_gen.reflection_coeff_min)[0])
@@ -47,7 +53,7 @@ def simulate_room(signal):
 
     # handle directivity of sender and receiver
     if config_gen.directivity:
-        dir_type = pra.directivities.DirectivityPattern.CARDIOID
+        dir_type = pra.directivities.DirectivityPattern.SUBCARDIOID
     else:
         dir_type = pra.directivities.DirectivityPattern.OMNI
 
@@ -86,3 +92,68 @@ def simulate_room(signal):
         toas[i] = np.linalg.norm(R[:,i] - curve(t_mid))
     
     return (sounds, toas)
+
+
+def simulate_room_series_with_different_reverb(signal, reverb_levels):
+    import configs.config_eval as config_eval
+    re_result = []
+
+    # select subpart of signal
+    n_simulation_samples = config_eval.recording_len + config_eval.extra_samples_start_for_echo
+    start_idx = np.random.randint(signal.shape[0] - n_simulation_samples - 1)
+    signal = signal[start_idx:start_idx+n_simulation_samples]
+
+    # generate room
+    reflection_coeff = reverb_levels[0]#float((np.random.rand(1)*(config_gen.reflection_coeff_max- config_gen.reflection_coeff_min) + config_gen.reflection_coeff_min)[0])
+    x,y,z = (config_eval.room_max_size - config_eval.room_min_size)*np.random.rand(3) + config_eval.room_min_size
+    random_point_in_room = lambda : np.random.rand(3)*[x,y,z]
+    #corners = np.array([[0,0], [0,y], [x,y], [x,0]]).T 
+    
+    # handle directivity of sender and receiver
+    if config_eval.directivity:
+        dir_type = pra.directivities.DirectivityPattern.CARDIOID
+    else:
+        dir_type = pra.directivities.DirectivityPattern.OMNI
+
+    random_dir_obj = lambda : pra.directivities.CardioidFamily(
+                orientation=pra.directivities.DirectionVector(azimuth=np.random.rand()*360, colatitude=180*np.random.rand(), degrees=True),
+                pattern_enum=dir_type,)
+
+    # add sender
+    max_time = n_simulation_samples/config_eval.fs
+    curve = QuadraticBezierCurve(np.array([x,y,z]), max_time, config_eval.sound_source_max_speed)
+    sender_dir_obj = random_dir_obj() # sender is pointing at a constant direction during movement
+ 
+    # add receivers
+    R = np.array(np.stack([random_point_in_room() for i in range(config_eval.n_mics)]).T)
+    r_dirs = [random_dir_obj() for j in range(config_eval.n_mics)]
+    
+    #for i in range(config_gen.n_mics):
+    
+    for reverb in reverb_levels:
+        room = pra.ShoeBox([x,y,z], fs=config_eval.fs, max_order=3, materials=pra.Material(reverb, config_eval.scatter_coeff), ray_tracing=False, air_absorption=True)
+        for i in range(config_eval.sound_source_locations_per_recording):
+            t = i*max_time/config_eval.sound_source_locations_per_recording
+            send_pos = curve(t)
+            local_signal = signal[int(i*n_simulation_samples/config_eval.sound_source_locations_per_recording):int((i+1)*n_simulation_samples/config_eval.sound_source_locations_per_recording)]
+            room.add_source(send_pos,directivity=sender_dir_obj,signal=local_signal,delay=t)
+
+        room.add_microphone(R,directivity=r_dirs)
+
+    # simulation
+        room.image_source_model() # compute image sources for reflections
+
+        room.compute_rir()
+        room.simulate()
+
+        # store correct piece of sound (i.e after the extra bit)
+        sounds = room.mic_array.signals
+        sounds = sounds[:,config_eval.extra_samples_start_for_echo:n_simulation_samples]
+
+        # Compute toas
+        toas = np.zeros(config_eval.n_mics)
+        t_mid = (config_eval.extra_samples_start_for_echo + config_eval.recording_len/2)/config_gen.fs
+        for i in range(config_eval.n_mics):
+            toas[i] = np.linalg.norm(R[:,i] - curve(t_mid))
+        re_result.append((sounds, toas))
+    return re_result

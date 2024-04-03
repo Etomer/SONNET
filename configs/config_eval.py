@@ -38,7 +38,7 @@ sound_source_max_speed = 5 # m/s
 sound_source_locations_per_recording = 30
 fs = 16000
 
-sound_folder = os.path.join("data","eval_sim_sound")
+sound_folder = os.path.join("data","tdoa_20201016","meta","reference sound")
 dataset_target_folder = os.path.join("results","datasets")
 dataset_target_name = "eval"
 

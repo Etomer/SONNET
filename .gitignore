@@ -10,6 +10,8 @@ data/*
 env/**
 #results/**
 *.pth
+!models/ResNetFFT/checkpoints/sonnet.pth
+
 
 # specific test file
 scripts/generate_dataset/test.ipynb
@@ -52,3 +54,4 @@ scripts/generate_dataset/test.py
 .Trashes
 ehthumbs.db
 Thumbs.db
+data

@@ -20,6 +20,7 @@ fs = 16000 # requires all .wav files to have this sampling frequency
 
 directivity = True
 
+movement_probability = 0.5
 sound_source_max_speed = 5 # m/s
 sound_source_locations_per_recording = 30 # number of locations to simulate the sound source at (instead of moving the source) Note: this is inculding the extra_samples_start_for_echo
 

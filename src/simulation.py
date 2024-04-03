@@ -63,13 +63,18 @@ def simulate_room(signal):
 
     # add sender
     max_time = n_simulation_samples/config_gen.fs
-    curve = QuadraticBezierCurve(np.array([x,y,z]), max_time, config_gen.sound_source_max_speed)
     sender_dir_obj = random_dir_obj() # sender is pointing at a constant direction during movement
-    for i in range(config_gen.sound_source_locations_per_recording):
-        t = i*max_time/config_gen.sound_source_locations_per_recording
-        send_pos = curve(t)
-        local_signal = signal[int(i*n_simulation_samples/config_gen.sound_source_locations_per_recording):int((i+1)*n_simulation_samples/config_gen.sound_source_locations_per_recording)]
-        room.add_source(send_pos,directivity=sender_dir_obj,signal=local_signal,delay=t)
+
+    if np.random.rand(1) < config_gen.movement_probability:
+        curve = QuadraticBezierCurve(np.array([x,y,z]), max_time, config_gen.sound_source_max_speed)
+        for i in range(config_gen.sound_source_locations_per_recording):
+            t = i*max_time/config_gen.sound_source_locations_per_recording
+            send_pos = curve(t)
+            local_signal = signal[int(i*n_simulation_samples/config_gen.sound_source_locations_per_recording):int((i+1)*n_simulation_samples/config_gen.sound_source_locations_per_recording)]
+            room.add_source(send_pos,directivity=sender_dir_obj,signal=local_signal,delay=t)
+    else:
+        room.add_source(random_point_in_room(),directivity=sender_dir_obj,signal=signal)
+
 
     # add receivers
     R = np.array(np.stack([random_point_in_room() for i in range(config_gen.n_mics)]).T)
@@ -131,7 +136,8 @@ def simulate_room_series_with_different_reverb(signal, reverb_levels):
     #for i in range(config_gen.n_mics):
     
     for reverb in reverb_levels:
-        room = pra.ShoeBox([x,y,z], fs=config_eval.fs, max_order=3, materials=pra.Material(reverb, config_eval.scatter_coeff), ray_tracing=False, air_absorption=True)
+      
+        room = pra.ShoeBox([x,y,z], fs=config_eval.fs, max_order=20, materials=pra.Material(reverb, config_eval.scatter_coeff), ray_tracing=False, air_absorption=True)
         for i in range(config_eval.sound_source_locations_per_recording):
             t = i*max_time/config_eval.sound_source_locations_per_recording
             send_pos = curve(t)
@@ -144,6 +150,8 @@ def simulate_room_series_with_different_reverb(signal, reverb_levels):
         room.image_source_model() # compute image sources for reflections
 
         room.compute_rir()
+        t60s = np.zeros(config_eval.n_mics)
+
         room.simulate()
 
         # store correct piece of sound (i.e after the extra bit)
@@ -155,5 +163,6 @@ def simulate_room_series_with_different_reverb(signal, reverb_levels):
         t_mid = (config_eval.extra_samples_start_for_echo + config_eval.recording_len/2)/config_gen.fs
         for i in range(config_eval.n_mics):
             toas[i] = np.linalg.norm(R[:,i] - curve(t_mid))
-        re_result.append((sounds, toas))
+            t60s[i] = pra.experimental.rt60.measure_rt60(room.rir[i][0],decay_db=20)
+        re_result.append((sounds, toas, t60s))
     return re_result

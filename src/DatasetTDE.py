@@ -27,11 +27,13 @@ class DatasetTDE(torch.utils.data.Dataset):
 
 class DatasetTDE_eval(torch.utils.data.Dataset):
 
-    def __init__(self, X,y, sampling_freq=16000,speed_of_sound = 343):
+    def __init__(self, X,y, sampling_freq=16000,speed_of_sound = 343, t60 = None, use_t60=False):
         self.sampling_freq = sampling_freq
         self.speed_of_sound = speed_of_sound
         self.X = X
         self.y = y
+        self.use_t60 = use_t60
+        self.t60 = t60
         self.pair_idx_map = []
         for i in range(self.X.shape[1]):
             for j in range(i+1,self.X.shape[1]):
@@ -45,6 +47,9 @@ class DatasetTDE_eval(torch.utils.data.Dataset):
         
         reX = torch.stack([torch.tensor(self.X[room_idx, mics[0]]),torch.tensor(self.X[room_idx, mics[1]])],axis=0)
         rey = self.y[room_idx,mics[0]] - self.y[room_idx,mics[1]]
+        if self.use_t60:
+            ret60 = (self.t60[room_idx,mics[0]] + self.t60[room_idx,mics[1]])/2
+            return reX,rey*self.sampling_freq/self.speed_of_sound, ret60
 
         return reX,rey*self.sampling_freq/self.speed_of_sound
 

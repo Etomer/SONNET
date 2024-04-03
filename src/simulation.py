@@ -64,16 +64,17 @@ def simulate_room(signal):
     # add sender
     max_time = n_simulation_samples/config_gen.fs
     sender_dir_obj = random_dir_obj() # sender is pointing at a constant direction during movement
-
+    t_mid = (config_gen.extra_samples_start_for_echo + config_gen.recording_len/2)/config_gen.fs
+    curve = QuadraticBezierCurve(np.array([x,y,z]), max_time, config_gen.sound_source_max_speed)
     if np.random.rand(1) < config_gen.movement_probability:
-        curve = QuadraticBezierCurve(np.array([x,y,z]), max_time, config_gen.sound_source_max_speed)
         for i in range(config_gen.sound_source_locations_per_recording):
             t = i*max_time/config_gen.sound_source_locations_per_recording
             send_pos = curve(t)
             local_signal = signal[int(i*n_simulation_samples/config_gen.sound_source_locations_per_recording):int((i+1)*n_simulation_samples/config_gen.sound_source_locations_per_recording)]
             room.add_source(send_pos,directivity=sender_dir_obj,signal=local_signal,delay=t)
     else:
-        room.add_source(random_point_in_room(),directivity=sender_dir_obj,signal=signal)
+        
+        room.add_source(curve(t_mid),directivity=sender_dir_obj,signal=signal)
 
 
     # add receivers
@@ -92,7 +93,7 @@ def simulate_room(signal):
 
     # Compute toas
     toas = np.zeros(config_gen.n_mics)
-    t_mid = (config_gen.extra_samples_start_for_echo + config_gen.recording_len/2)/config_gen.fs
+    
     for i in range(config_gen.n_mics):
         toas[i] = np.linalg.norm(R[:,i] - curve(t_mid))
     

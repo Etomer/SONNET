@@ -9,7 +9,7 @@ from models.gcc_phat.gcc_phat import gcc_phat
 
 def get_models():
     models = {
-        "SONNET" : torch.load("models/ResNetFFT/checkpoints/musan_mix.pth").to(device),
+        "SONNET" : torch.load("models/ResNetFFT/checkpoints/sonnet.pth").to(device),
         "GCC-PHAT" : gcc_phat()
     }
     return models
